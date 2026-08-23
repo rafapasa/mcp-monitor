@@ -1,0 +1,31 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>MCP Monitor</title>
+<style>
+body{background:#0e0e0e;color:#e5e5e5;font-family:Inter,system-ui;padding:24px}
+.card{background:#1a1a1a;border:1px solid #2a2a2a;border-radius:16px;padding:20px;max-width:900px}
+button{padding:12px 18px;border-radius:10px;border:0;font-weight:700;cursor:pointer;margin-right:8px}
+#bStart{background:#fff;color:#000}#bStop{background:#222;color:#fff;border:1px solid #333}
+#log{background:#000;border:1px solid #222;border-radius:12px;padding:16px;height:60vh;overflow:auto;white-space:pre-wrap;margin-top:16px}
+input{padding:10px;border-radius:10px;border:1px solid #333;background:#000;color:#fff}
+kbd{background:#333;padding:3px 8px;border-radius:6px}
+</style></head><body>
+<div class="card">
+<h1>MCP Monitor <span style="opacity:.5;font-size:14px">v1 - sem Wails</span></h1>
+<p>Aperte <kbd>F9</kbd> aqui no navegador pra capturar tela. Ou use START pro timer.</p>
+<input id="mins" type=number value=5 style="width:80px"> min
+<button id="bStart" onclick="start()">START</button>
+<button id="bStop" onclick="stop()">STOP</button>
+<button onclick="capture()">CAPTURAR AGORA (F9)</button>
+<div id="status" style="margin-top:12px;opacity:.7">Parado</div>
+<pre id="log">Aguardando...</pre>
+</div>
+<script>
+const logEl=document.getElementById('log');
+let ws=new WebSocket('ws://'+location.host+'/ws');
+ws.onmessage=e=>{logEl.textContent+=e.data+'\n'; logEl.scrollTop=1e9};
+function start(){fetch('/api/start',{method:'POST',body:JSON.stringify({interval:parseInt(mins.value)})}).then(()=>status.textContent='Rodando a cada '+mins.value+' min')}
+function stop(){fetch('/api/stop',{method:'POST'}).then(()=>status.textContent='Parado')}
+function capture(){fetch('/api/capture',{method:'POST'}).then(()=>status.textContent='F9 capturado '+new Date().toLocaleTimeString())}
+window.addEventListener('keydown',e=>{if(e.key==='F9'){e.preventDefault(); capture()}});
+</script>
+</body></html>
